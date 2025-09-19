@@ -1,0 +1,54 @@
+name: Build and Publish Docker Image
+
+# Ce workflow se déclenche UNIQUEMENT manuellement via l'interface de GitHub Actions
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version de l'image à publier (ex: 8.2-apache-v0.0.1)"
+        required: true
+        type: string
+      set_as_latest:
+        description: "Mettre à jour le tag 'latest' avec cette version ?"
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # Étape 1: Récupère la dernière version du code de la branche 'main'
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Étape 2: Connexion à Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      # Étape 3: Générer les tags pour l'image Docker
+      - name: Generate Docker tags
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: manastria/symfony
+          tags: |
+            # Ajoute le tag basé sur la version fournie manuellement
+            type=raw,value=${{ inputs.version }}
+            # Ajoute le tag 'latest' SEULEMENT si 'set_as_latest' est à 'true'
+            type=raw,value=latest,enable=${{ inputs.set_as_latest }}
+
+      # Étape 4: Construction et publication de l'image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./php-build/Dockerfile.base
+          push: true
+          # Utilise les tags générés à l'étape précédente
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
