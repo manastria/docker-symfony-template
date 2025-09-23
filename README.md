@@ -105,6 +105,22 @@ Votre environnement est prêt ! Vous pouvez vérifier que tout fonctionne en vi
 
 -----
 
+## Travailler sur plusieurs projets
+
+Ce modèle est conçu pour que vous puissiez avoir plusieurs projets fonctionnant en même temps sur votre machine.
+
+Chaque projet est isolé. Docker créera des conteneurs avec des noms uniques basés sur le nom du dossier de votre projet.
+
+Les ports de communication (par exemple, `8000` pour le site web) sont définis dans le fichier `.env`. Si vous lancez un projet et que le terminal vous indique une erreur de type **"port is already allocated"**, cela signifie qu'un autre service (d'un autre projet ou non) utilise déjà ce port.
+
+Pour corriger cela :
+
+1. Ouvrez le fichier `.env` du projet que vous essayez de lancer.
+2. Modifiez les numéros de port (par exemple, `PHP_PORT=8001`, `PMA_PORT=8081`, etc.).
+3. Relancez `docker compose up -d`.
+
+-----
+
 ## Accès et commandes utiles
 
 ### Accès aux services

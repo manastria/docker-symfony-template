@@ -41,5 +41,11 @@ else
   printf 'UID=%s\nGID=%s\n' "$uid" "$gid" > "$tmp"
 fi
 
+# Ajoute les ports par défaut au fichier .env s'ils ne sont pas déjà définis
+echo "" >> "$envfile" # Ajoute une ligne vide pour la séparation
+grep -q -F 'PHP_PORT=' "$envfile" || echo 'PHP_PORT=8000' >> "$envfile"
+grep -q -F 'PMA_PORT=' "$envfile" || echo 'PMA_PORT=8080' >> "$envfile"
+grep -q -F 'MYSQL_PORT=' "$envfile" || echo 'MYSQL_PORT=3307' >> "$envfile"
+
 mv -f "$tmp" "$envfile"
 echo "Mise à jour de $envfile : UID=$uid, GID=$gid"
