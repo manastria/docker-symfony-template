@@ -1,13 +1,15 @@
 services:
   php:
     image: manastria/symfony:8.2-apache-v0.0.1
-    container_name: php_82
     ports:
-      - "8000:80"
+      - "${PHP_PORT:-8000}:80"
     volumes:
       - ./app:/var/www/html 
       - ./php-conf/php.ini:/usr/local/etc/php/conf.d/custom.ini 
       - ./php-build/start.sh:/usr/local/bin/start.sh
+      - ./php-conf/my-vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./php-conf/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+      - ./php-conf/99-dev.ini:/usr/local/etc/php/conf.d/99-dev.ini
     environment:
       - LOCAL_UID=${UID:-1000}
       - LOCAL_GID=${GID:-1000}
@@ -15,14 +17,13 @@ services:
     command: ["start.sh", "apache2-foreground"] 
   db:
     image: mysql:8.0
-    container_name: mysql_8
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: my_shop_dev
-      MYSQL_USER: user
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: userdb
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT:-3307}:3306"
     volumes:
       - ./db/init:/docker-entrypoint-initdb.d
     healthcheck:
@@ -33,11 +34,10 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
     environment:
       PMA_HOST: db
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - "8080:80"
+      - "${PMA_PORT:-8080}:80"
     depends_on:
     - db
